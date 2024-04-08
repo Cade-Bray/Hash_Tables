@@ -90,7 +90,7 @@ public:
  * Default constructor
  */
 HashTable::HashTable() {
-    // FIXME (1): Initialize the structures used to hold bids
+    // (1): Initialize the structures used to hold bids
     
     // Initialize node structure by resizing tableSize
     nodes.resize(tableSize);
@@ -112,8 +112,7 @@ HashTable::HashTable(unsigned int size) {
  * Destructor
  */
 HashTable::~HashTable() {
-    // FIXME (2): Implement logic to free storage when class is destroyed
-    // TODO: Testing to see if this is will delete all nodes. Maybe isolate code in different fx to test?
+    // (2): Implement logic to free storage when class is destroyed
     // Iterates through each node in the "nodes" vector. Used auto to avoid having to specify the iterator type
     for (auto &node : nodes) {
         while (node.next != nullptr) { // while the next node is not null -> delete the next node
@@ -134,7 +133,7 @@ HashTable::~HashTable() {
  * @return The calculated hash
  */
 unsigned int HashTable::hash(int key) {
-    // FIXME (3): Implement logic to calculate a hash value
+    // (3): Implement logic to calculate a hash value
     // return key tableSize
     return key % tableSize;
 }
@@ -147,28 +146,48 @@ unsigned int HashTable::hash(int key) {
 void HashTable::Insert(Bid bid) {
     // FIXME (5): Implement logic to insert a bid
     // create the key for the given bid
+    // Used atoi to convert cstring to int so the value could be hashed.
+    auto key = hash(atoi(bid.bidId.c_str()));
+    auto og_key = key;
+
     // retrieve node using key
-    // if no entry found for the key
-        // assign this node to the key position
-    // else if node is not used
-         // assing old node key to UNIT_MAX, set to key, set old node to bid and old node next to null pointer
-    // else find the next open node
-            // add new newNode to end
+    auto hashed_node = nodes.at(key);
+
+    bool assigned = false;
+    while (!assigned) {
+        // If the hashed node is empty, assign the bid to the node
+        if (hashed_node.key == UINT_MAX) {
+            nodes.at(key) = Node(bid, key);
+            assigned = true;
+
+        // Key has reached the end of the list, reset key to 0
+        } else if (key == nodes.size() - 1) {
+            key = 0;
+        //This use case of comparing key to original key -1 means it has gone through the entire list and found no empty buckets.
+        } else if (key == og_key - 1) {
+            throw out_of_range("No empty buckets available");
+        } else {
+            // Check next bucket
+            key++;
+            //assigned hashed_node to the node for the incremented key.
+            hashed_node = nodes.at(key);
+        }
+    }
+
 }
 
 /**
  * Print all bids
  */
 void HashTable::PrintAll() {
-    // FIXME (6): Implement logic to print all bids
+    // (6): Implement logic to print all bids
     // for node begin to end iterate
-    //   if key not equal to UINT_MAx
-            // output key, bidID, title, amount and fund
-            // node is equal to next iter
-            // while node not equal to nullptr
-               // output key, bidID, title, amount and fund
-               // node is equal to next node
-
+    for(auto node : nodes) {
+        if (node.key != UINT_MAX) { // Used Unit_Max to check if the node is empty because it shouldn't be used as a key
+            cout << "Key: " << node.key << " | " << node.bid.bidId << " | " << node.bid.title << " | "
+            << node.bid.amount << " | " << node.bid.fund << endl; // output key, bidID, title, amount and fund
+        }
+    }
 }
 
 /**
@@ -177,9 +196,12 @@ void HashTable::PrintAll() {
  * @param bidId The bid id to search for
  */
 void HashTable::Remove(string bidId) {
-    // FIXME (7): Implement logic to remove a bid
+    // (7): Implement logic to remove a bid
     // set key equal to hash atoi bidID cstring
+    auto key = hash(atoi(bidId.c_str()));
+
     // erase node begin and key
+    nodes.erase(nodes.begin() + key);
 }
 
 /**
@@ -190,19 +212,20 @@ void HashTable::Remove(string bidId) {
 Bid HashTable::Search(string bidId) {
     Bid bid;
 
-    // FIXME (8): Implement logic to search for and return a bid
+    // (8): Implement logic to search for and return a bid
 
     // create the key for the given bid
+    auto key = hash(atoi(bidId.c_str()));
     // if entry found for the key
+    if (nodes.at(key).bid.bidId == bidId) {
          //return node bid
+        return nodes.at(key).bid;
 
     // if no entry found for the key
-      // return bid
-    // while node not equal to nullptr
-        // if the current node matches, return it
-        //node is equal to next node
-
-    return bid;
+    } else {
+        // return bid
+        return bid;
+    }
 }
 
 //============================================================================
