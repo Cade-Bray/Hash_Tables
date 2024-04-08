@@ -104,6 +104,7 @@ HashTable::HashTable() {
 HashTable::HashTable(unsigned int size) {
     // invoke local tableSize to size with this->
     // resize nodes size
+    nodes.resize(size);
 }
 
 
@@ -112,19 +113,16 @@ HashTable::HashTable(unsigned int size) {
  */
 HashTable::~HashTable() {
     // FIXME (2): Implement logic to free storage when class is destroyed
-    
-    // erase nodes beginning
-    for(auto node = nodes.begin(); node != nodes.end(); node++) {
-        if(node->key != UINT_MAX) {
-            Node* nextNode = node->next;
-            while(nextNode != nullptr) {
-                Node* deleteNode = nextNode;
-                nextNode = nextNode->next;
-                delete deleteNode;
-            }
+    // TODO: Testing to see if this is will delete all nodes. Maybe isolate code in different fx to test?
+    // Iterates through each node in the "nodes" vector. Used auto to avoid having to specify the iterator type
+    for (auto &node : nodes) {
+        while (node.next != nullptr) { // while the next node is not null -> delete the next node
+            Node* temp_delete = node.next; //Creates a temporary node to store the next node
+            node.next = node.next->next; //Sets the current node to the next node
+            delete temp_delete; //Deletes the temporary node to clean up memory
         }
     }
-}
+};
 
 /**
  * Calculate the hash value of a given key.
@@ -138,6 +136,7 @@ HashTable::~HashTable() {
 unsigned int HashTable::hash(int key) {
     // FIXME (3): Implement logic to calculate a hash value
     // return key tableSize
+    return key % tableSize;
 }
 
 /**
